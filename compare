@@ -1,0 +1,43 @@
+test, [], [[]], let, (())
+
+
+glob 格式匹配
+    *: 0 或多个字符
+    ?: 一个字符
+    []: 区间
+
+
+** [], [[]] 使用时要不要吝啬空格, 否则出错
+
+
+test expr 和 [ expr ] 一样
+    字符串比较用 ==, !=
+    整数比较用 -eq, -nq, -lt, -gt, -le, -ge
+    使用 <, > 必须转义, \<, \>. 因为 test, [ 为 shell 的内建命令, >, < 会被理解为从定向
+    -a(与), -o(或), !(非)
+    如果 $? 是 0, 则返回 true(和"(())"不同)
+    不做算数运算
+
+
+
+[[ expr ]]
+    shell 的关键字
+    =~ 支持正则匹配
+    可做算数运算
+    expr 不会被文件扩展或标记分割, 会被参数引用和命令替换 
+    http://unix.stackexchange.com/questions/108963/expansion-of-a-shell-variable-and-effect-of-glob-and-split-on-it
+    http://blog.csdn.net/luobin1984/article/details/7894807
+
+
+let expr, ((expr))
+    expr 表达式值为 0, 返回 false(1).
+    expr 表达式值非 0, 返回 true(0).
+
+
+
+let, (())
+    let 比 (()) 强大  # TODO
+    算数运算, 整数比较, 可以使用 >, <, ==, !=, <=, >=
+    可以直接使用 var, 不用加 $($var)
+    c 支持的语法都支持  # TODO
+
