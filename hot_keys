@@ -1,0 +1,22 @@
+http://www.360doc.com/content/12/0502/06/775902_208014739.shtml
+Ctrl
+    ctrl+xx
+    ctrl+x@  show hostname
+    ctrl+h  delete current character
+    ctrl+r  继续按继续往上搜索
+    ctrl+s  继续按继续往下搜索(正向)
+
+Alt
+    alt+<  历史列表最后一项
+    alt+>  历史列表第一项
+
+Tab
+   *TabTab  file without hidden one
+   ~TabTab  all present users on /etc/password
+   $TabTab  sys variables
+   @TabTab  entries form /etc/hosts
+   =TabTab  ls
+
+Esc
+    esc+T  change previous tow words
+
