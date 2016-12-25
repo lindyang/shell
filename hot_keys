@@ -1,16 +1,21 @@
 http://www.360doc.com/content/12/0502/06/775902_208014739.shtml
 Ctrl
+    ctrl+t 交换字符 
+    ctrl+y 黏贴刚才删除的字符 
+    ctrl+xu 撤销操作 
     ctrl+xx
     ctrl+x@  show hostname
     ctrl+h  delete current character
-    ctrl+r  继续按继续往上搜索
-    ctrl+s  继续按继续往下搜索(正向)
 
 Alt
     alt+.  历史命令的最后一项
     alt+<  历史列表最后一项
     alt+>  历史列表第一项
-
+    alt+t 交换单词
+    alt+u 单词大写 
+    alt+i 单词小写 
+    alt+c 首字母大写 
+    alt+.
 Tab
    *TabTab  file without hidden one
    ~TabTab  all present users on /etc/password
@@ -19,5 +24,7 @@ Tab
    =TabTab  ls
 
 Esc
-    esc+T  change previous tow words
+    esc+t  change previous tow words
+    esc+f 移动到单词结尾 
+    esc+b 移动到单词开头
 

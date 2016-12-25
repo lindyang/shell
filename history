@@ -1,0 +1,11 @@
+HISTFILE
+HISTTIMEFORMAT "`whoami`: %F %T    "
+man strftime
+退出登陆之后会写到
+HISTSIZE=0
+HISTCONTROL
+    ignorespace
+    ignoredups
+    erasedups
+HISTIGNORE
+    "pwd:ls:history"
