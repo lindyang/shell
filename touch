@@ -1,0 +1,9 @@
+A FILE argument string of - is handled specially and causes touch to change the times of the file associated with standard output.
+
+info touch
+
+-a, -m, --time
+
+-d, --date, -t, -r, --reference
+
+-c, --no-create, -h, --no-dereference
