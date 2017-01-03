@@ -75,3 +75,25 @@ hiredis is an optional performance-improving C library
         zrangebyscore score 0 800 withscores
     ZREM
 
+
+1,000 submitted each day
+of 1,000 articles, about 50 of them are interesting enough
+we want them in top-100 articles for at least one day. All of
+those 50 articles will receive at least 200 up votes.
+
+score = f(posted time, multiplier * votes)
+multiplier = a-day(86,400) / 200 = 432
+
+
+article:92617
+    title   "Go to statement considered harmful"
+    link    "http://goo.gl/kZUSu"
+    poster  user:83271
+    time    1331382699.33
+    votes   528
+
+
+time:
+    article:100418  1332065417.47
+    article:100635  1332075503.49
+    article:
