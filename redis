@@ -1,0 +1,77 @@
+Redis is an in-memory remote database that offers high performance, replication,
+and a unique data model to produce a flatform for solving problems.
+
+Redis is a very fast onn-relational database that stores a mapping of keys to five
+different types of values.
+
+Strings, lists, sets, hashes, sorted sets
+bulk operations, partial transaction support
+Publish/Subscripe
+master/slave
+disk persistence, scripting(stored procedures)
+
+persistence,
+1. point-in-time dump
+    certion condition are met(a number of writes in a give period)
+    one of the dump-to-disk commands is called
+2. append-only
+    never sync
+    sync once per second
+    sync at the completion of every operation
+
+master/slave
+
+STRINGs, LISTs, SETS, HASHs, ZSETs.
+DEL, TYPE, RENAME
+
+STRING (strings, integers, floating-point) whole string, parts, increment/decrement the integers and floats
+
+LIST push or pop from both ends, trim based on offsets, read individual or multiple items, find or remove iterms by value
+
+SET Add, fetch, or remove individual items, check membership, intersect, unicon, difference, fetch random items
+
+HASH add, fetch or remove individual items, fetch the whole hash
+
+ZSET(sorted set) Ordered mapping of string members to floating-point scores, ordered by score  add, fetch or remove invidual values, fetch iterms based on score ranges or member value
+
+hiredis is an optional performance-improving C library
+
+== STRING ==
+    SET
+    GET
+    DEL
+
+== LIST ==
+    LPUSH/RPUSH
+    LPOP/RPOP
+    LINDEX
+        lindex team 0
+    LRANGE  :
+        lrange team 0 -1
+
+== SET ==
+    # unordered, we can not use push and pop
+    SADD
+    SREM
+    SISMEMBER
+    SMEMBERS(may be slow)
+    SINTER
+    SUNION
+    SDIFF
+
+== HASH ==
+    HSET
+    HGET
+    HGETALL
+    HDEL
+
+== ZSET ==
+    # members(keys) : scores(values, floating-point)
+    # accessed by member; accessed by sorted order and values of scores.
+    ZADD
+    ZRANGE
+        zrange score 0 -1 withscores
+    ZRANGEBYSCORE
+        zrangebyscore score 0 800 withscores
+    ZREM
+
