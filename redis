@@ -96,4 +96,300 @@ article:92617
 time:
     article:100418  1332065417.47
     article:100635  1332075503.49
-    article:
+
+score:
+    article:100635  1332164063.49
+    article:100408  1332174713.47
+
+voted:100408
+    user:234487
+    user:253378
+    user:364680
+
+
+[when vote for a article]
+ONE_WEEK_IN_SECONDS = 7 * 86400
+VOTE_SCORE = 432
+
+
+Exercise: Down-voting
+
+def article_vote(conn, user, article, down=False):
+    cutoff = time.time() - ONE_WEEK_IN_SECONDS
+    if conn.zscore('time:', article) < cutoff:
+        return
+    article_id = article.partition(':')[-1]
+    # TODO transaction
+    if conn.sadd('voted:' + article_id, user):
+        conn.zincrby('score:', article, VOTE_SCORE)
+        conn.hincrby(article, 'votes', 1)
+
+
+def post_article(conn, user, title, link):
+    article_id = str(conn.incr('article:'))
+
+    voted = 'voted:' + article_id
+    conn.sadd(voted, user)
+    conn.expire(voted, ONE_WEEK_IN_SECONDS)
+
+    now = time.time()
+    article = 'article:' + article_id
+    conn.hmset(article, {
+        'title': title,
+        'link': link,
+        'poster': user,
+        'time': now,
+        'votes': 1,
+    })
+
+    conn.zadd('score:', article, now + VOTE_SCORE)
+    conn.zadd('time:', article, now)
+
+    return article_id
+
+ARTICLES_PER_PAGE = 25
+
+def get_articles(conn, page, order='score:'):
+    start = (page - 1) * ARTICLES_PER_PAGE
+    end = start + ARTICLES_PER_PAGE - 1
+
+    ids = conn.zrevrange(order, start, end)
+    articles = []
+    for id in ids:
+        article_data = conn.hgetall(id)
+        article_data['id'] = id
+        article_data.append(article_data)
+    return articles
+
+
+def add_remove_groups(conn, article_id, to_add=[], to_remove=[]):
+    article = 'article:' + article_id
+    for group in to_add:
+        conn.sadd('group:' + group, article)
+    for group in to_remove:
+        conn.srem('group:' + group, article)
+
+
+def get_group_articles(conn, group, page, order='score:'):
+    key = order + group
+    if not conn.exists(key):
+        conn.zinterstore(key,
+            ['group:' + group, order],
+            aggregate='max',
+        )
+        conn.expire(key, 60)
+    return get_articles(conn, page, key)
+
+
+def check_token(conn, token):
+    return conn.hget('login:', token)
+
+
+def update_token(conn, token, user, item=None):
+    timestamp = time.time()
+    conn.hset('login:', token, user)
+
+
+== check_token() ==
+def check_token(conn, token):
+    return conn.hget('login:', token)
+
+== update_token ==
+def update_token(conn, token, user, item=None):
+    timestamp = time.time()
+    conn.hset('login:', token, user)
+    conn.zadd('recent:', token, timestamp)
+    if item:
+        conn.zadd('viewed:' + token, item, timestamp)
+        conn.zremrangebyrank('viewed:' + token, 0, -26)
+
+QUIT = False
+LIMIT = 10000000
+
+def clean_sessions():
+    while not QUIT:
+        size = conn.zcard('recent:')
+        if size <= LIMIT:
+            time.sleep(1)
+        else:
+            end_index = min(size - LIMIT, 100)
+            tokens = conn.zrange('recent:', 0, end_index -1)
+            session_keys = []
+            for token in tokens:
+                session_keys.append('viewed:' + token)
+            conn.delete(*session_keys)  # zset, viewed: + token
+            conn.hdel('login:', *tokens)  # dict.pop
+            conn.zrem('recent:', *tokens)  # zset
+
+def add_to_cart(conn, session, item, count):
+    if count <= 0:
+        conn.hdel('cart:' + session, item)
+    else:
+        conn.hset('cart:' + session, item, count)
+
+    
+def clean_full_sessions():
+    while not QUIT:
+        size = conn.zcard('recent:')
+        if size <= LIMIT:
+            time.sleep(1)
+        else:
+            end_index = min(size - LIMIT, 100)
+            sessions = conn.zrange('recent:', 0, end_index - 1)
+            session_keys = []
+            for sess in sessions:
+                session_keys.append('viewed:' + sess)
+                session_keys.append('card:' + sess)
+            conn.delete(*session_keys)
+            conn.hdel('login:', *sessions)
+            conn.zrem('recent:', *sessions)
+
+
+def cache_request(conn, request, callback):
+    if not can_cache(conn, request):
+        return callback(request)
+    else:
+        page_key = 'cache:' + hash_request(request)
+        content = conn.get(page_key)
+        if not content:
+            content = callback(request)
+            conn.set(page_key, content, ex=300)
+        return content
+
+
+inv:273
+    {"qty": 629, "name": "GTab 7inch", "description": "..."}
+
+scheduleZSET
+id tiemstamp(when should to copy to redis)
+
+delayZSET
+id sceonds(to wait between cache updates)
+
+user:123 could be a HASH
+user:123:posts could be a ZSET
+
+
+def schedule_row_cache(conn, row_id, dalay):
+    conn.zadd('delay', row_id, dalay)
+    conn.zadd('schedule:', row_id, time.time())
+
+
+def cache_rows(conn):
+    while not QUIT:
+        next = conn.zrange('schedules:', 0, 0, withscores=True)
+        now = time.time()
+        if not next or next[0][1] > now:
+            time.sleep(0.05)
+        else:
+            next_id = next[0][0]
+            delay = conn.zscore('delay:', row_id)
+            if delay <= 0:
+                conn.zrem('delay:', row_id)
+                conn.zrem('schedule:', row_id)
+                conn.delete('inv:' + row_id)
+            else:
+                row = Inventory.get(row_id)
+                conn.zadd('schedule:', row_id, now + delay)
+                conn.set('inv:' + row_id, json.dumps(row.to_dict()))
+
+
+def update_token(conn, token, user, item=None):
+    timestamp = time.time()
+    conn.hset('login:', token, user)
+    conn.zadd('recent:', token, timestamp)
+    if item:
+        conn.zadd('viewed:' + token, item, timestamp)
+        conn.zremrangebyrank('viewed:' + token, 0, -26)
+        conn.zincrby('viewed:', item, -1)
+
+
+def rescale_viewed(conn):
+    while not QUIT:
+        conn.zremrangebyrank('viewed:', 20000, -1)
+        conn.zinterstore('viewed:', {'viewed:': 0.5})
+        time.sleep(300)
+
+def can_cache(conn, request):
+    item_id = extract_item_id(request)
+    if not item_id or is_dynamic(request):
+        reture False
+    else:
+        rank = conn.zrank('viewed:', item_id)
+        return rank is not None and rank < 10000
+# compress
+# edge side includes
+# pre-optimize
+
+
+== STRING ==
+byte string
+integer
+float
+(integer turning into float as necessary)
+
+SUBSCRIBE
+UNSUBSCRIBE
+PUBLISH
+PSUBSCRIBE
+PUNSUBSCRIBE
+
+
+def publisher(n):
+    time.sleep(1)
+    for i in range(n):
+        conn.publish('channel', i)
+        time.sleep(1)
+
+def run_pubsub():
+    threading.Thread(target=publisher, args=(3,)).start()
+    pubsub = conn.pubsub()
+    pubsub.subscribe(['channel'])
+    count = 0
+    for item in pubsub.listen():
+        print(item)
+        count += 1
+        if count == 4:
+            pubsub.unsubscribe()
+        if count == 5:
+            break
+
+sort
+WATCH MULTI EXEC UNWATCH DISCARd
+
+simple MULTI, EXEC
+is not same as a relational database transaction
+after they've completed, other clients may execute their commands
+
+
+def trans():
+    pipeline = conn.pipeline()
+    pipeline.incr('trans:')
+    time.sleep(.1)
+    pipeline.incr('trans:', -1)
+    print(pipeline.execute()[0])
+
+
+pipeline
+    removing race conditions
+    imporving performance
+
+simple MULTI, EXEC
+is not same as a relational database transaction
+after they've completed, other clients may execute their commands
+
+
+def trans():
+    pipeline = conn.pipeline()
+    pipeline.incr('trans:')
+    time.sleep(.1)
+    pipeline.incr('trans:', -1)
+    print(pipeline.execute()[0])
+
+PERSIST
+TTL
+PTTL
+EXPIRE
+PEXPIRE
+EXPIREAT
+PEXPIREAT
