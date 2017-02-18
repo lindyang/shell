@@ -1,0 +1,65 @@
+target?
+RETURN
+    chain {
+        rule
+        chain {
+            rule {
+                RETURN
+            }
+            rule
+        }
+        rule {
+            RETURN  # the target specified by the chain policy
+                    # determines the fate of the packet.
+        }
+    }
+
+table = [
+    user-defined_chain,
+    build-in_chain = [
+        rule(not match),
+        rule(match),
+        rule  # target: user-defined_chain | iptables-extensions | [ACCEPT | DROP | RETURN]
+    ]
+]
+
+
+PREROUTING -----> ROUTE ------> FROWARD ------> POSTROUTING
+  \          |                     \              ^ \
+    mangle   |                      mangle        |  mangle
+    nat      |                      filter        |  nat
+    raw      V                                    |
+            INPUT -------> LOCALHOST --------> OUTPUT
+              \                                  \
+              mangle                              mangle
+              filter                              filter
+                                                  nat
+                                                  raw
+
+tables = [
+    filter = [
+        INPUT
+        FORWARD
+        OUTPUT
+    ]
+    nat = [
+        PREROUTING
+        OUTPUT
+        POSTROUTING
+    ]
+    mangle = [
+        PREROUTING
+        OUTPUT
+        # 2.4.18
+        INPUT
+        FORWARD
+        POSTROUTING
+    ]
+    raw = [
+    ]
+    security = [
+        INPUT
+        OUTPUT
+        FORWARD
+    ]
+]

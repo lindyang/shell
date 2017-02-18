@@ -8,6 +8,9 @@ Ctrl
     ctrl+h  delete current character
 
 Alt
+    alt+.  历史命令的最后一项
+    alt+<  历史列表最后一项
+    alt+>  历史列表第一项
     alt+t 交换单词
     alt+u 单词大写 
     alt+i 单词小写 
