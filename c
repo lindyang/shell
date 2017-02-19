@@ -96,3 +96,70 @@ C程序自动打开3个文件
 
 fp并不指向实际的文件, 指向关于文件信息的数据包(包括缓冲区信息).
 磁盘已满, 文件名非法, 存取权限不够或者硬件问题都会导致fopen失败.
+
+fclose(fp)关闭fp指定的文件, 同时根据需求刷新缓冲区.
+fclose()成功返回0, 失败返回EOF(磁盘已满, 磁盘移走或IO错误).
+
+fgets()函数读取到它所遇到的第一个换行字符后面, 或者读取比字符串最大长度少一或者文件结尾. 然后添加一个空字符.
+fgets()遇到文件结尾返回NULL值.
+
+fgets(line, MAX, stdin) != NULL && line[0] != '\n')
+fseek接受3个参数, 返回一个int. ftell返回long
+fseek
+    FILE
+    offset: 正(前移), 负(后移), 0(不懂)
+    SEEK_SET(开始), SEEK_CUR(当前), SEEK_END(结尾)
+正常返回0, 超出文件范围, 返回-1.
+ftell在stdio.h中
+ANSI C规定, 对于文本模式, 返回值可以用作fseek的第2个参数.
+MS-DOS, \r\n看作一个字节计数.
+fsetpos, fgetpos, fpos_t(file position type).
+fpos_t不能是数组类型.
+int fgetpos(FILE * restrict stream, fpos_t * restrict pos);
+int fsetpos(FILE * stream, const fpos_t * pos);
+int ungetc(int c, FILE * fp);  // 队列
+int fflush(FILE * fp);
+int setvbuf(FILE * restrict fp, char * restrict buf, int mode, size_t size);
+如果buf是NULL, 函数自动分配一个缓冲区.
+mode:
+    _IOFBF
+    _IOLBF
+    _IONBF
+
+fread, fwrite提供二进制服务.
+
+第14章 结构和其他数据形式
+struct, union, typedef
+. ->
+struct [标记]
+{
+};
+
+可以初始化一个结构变量(ANSI C之前的C, 不能是自动变量);
+struct book library = {
+    "The Pirate and the Devious Damsel",
+    "Renee Vivotte",
+    1.95
+};
+如果初始化一个具有静态存储时期的结构, 值必须是常量表达式.
+C99 支持:
+    struct book surprise = { .value = 10.99 };
+    可以按照任意的顺序初始化项目.
+    struct book gift = {
+        .value = 18.90,
+        .author = "Philionna Pestle",
+        0.35
+    };
+静态的或外部的数据不放在堆栈中.
+him->income, (*him).income
+->与.优先级一样
+结构的大小有可能大于个成员之和.
+ANSI C允许把结构传给参数.
+C允许把一个结构赋值给另一个结构.
+struct pnames {
+    char * first;
+    char * last;
+}
+结构体存储字符串用指针有严重误用的可能
+C99复合文字:
+
