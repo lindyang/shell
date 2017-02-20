@@ -162,4 +162,75 @@ struct pnames {
 }
 结构体存储字符串用指针有严重误用的可能
 C99复合文字:
+    (struct book){"title", "author", 6.99}
+C99伸缩型数组成员:
+    struct flex {
+        int count;
+        double scores[];  //伸缩型数组成员
+    }
+    struct flex * pf;
+    pf = (struct flex)malloc(sizeof(struct flex) + 5 * sizeof(double));
+    pf->scores[2] = 22.0;
+联合是能在同一个存储空间(但不是同时)存储不同类型数据的数据结构.
+union hold {
+    int digit;
+    double bigfl;
+    char letter;
+};
+union hold valA;
+valA.letter = 'R';
+union hold valB = valA;  //把一个联合初始化为另一个联合 
+union hold valC = {88};  //初始化联合的第一个成员 
+union hold valD = {.bigfl = 118.2};  //指定初始化项目(C99)
+结构和联合体都可以使用., ->
+enum spectrum {red, orange, yellow, green, blue, violet};
+枚举常量较宽松的限定为任意整数类型, 只要该整数类型能保存改枚举类型.
+C 允许枚举++, 但是 C++ 不允许, 所以用 int.
+enum feline {cat, lynx=10, puma, tiger}
+
+结构标记, 联合标记以及枚举标记共享同一命名空间, 并且这个名字空间和普通变量使用的名字空间不同.
+struct rect {double x; double y};
+int rect;  // 在C中不会引起冲突. 
+但是 C++不允许. 
+
+typedef和#define
+    与#define不同, typedef 给出的符号名称仅限于类型, 而不是对值.
+    typedef 的解释由编译器, 而不是预处理器执行.
+    虽然它的范围有限, 但是在受限范围内, typedef 比 define 灵活.
+
+使用#define 可以实现 typedef 的一部分功能. 例如:
+#define BYTE unsigned char
+但是也要#define实现不了的功能.
+#define STRING char *
+那么: STRING name, sign
+将会变为 char * name, sign;
+typedef struct {double x; double y;} rect;
+如果两个结构的声明都不使用标记, 但是使用同样的成员(成员名和类型都匹配), 那么C认为这两个结构具有同样的类型.
+tpedef char(* FRPTC())[5]; FRPTC声明函数类型, 该类型的函数返回一个指向含有5个元素的 char 数组的指针.
+int (* rusks)[10];  // 指向具有10个元素的int 数组
+int (* uof[3])[4];  // 一个具有3个元素的数组, 每个元素都是一个指向具有4个元素的int数组的指针. 
+
+[]和()具有同样的优先级.
+char (* flump[3])();  // 由3个指针组成的数组, 每个指针指向返回类型为 char 的函数.
+
+typedef int arr5[5];
+typedef arr5 * p_arr5;
+typedef p_arr5 arrp10[10];
+arr5 togs;  // togs是具有5个元素的 int 数组 
+p_arr5 p2;  // p2是一个指针, 指向具有5个元素的 int 数组. 
+arrp10 ap;  // ap 是具有10个元素的指针数组, 每个指针指向具有5个元素的 int 数组.
+
+C 库中的 qsort()函数.
+
+void (* pf)(char *);  // pf 是一个指向函数的指针
+pf = ToUpper;
+(*pf)(mis);  // 语法1
+pf(mis);  // 语法2, K&RC 不允许
+
+typedef void (* V_FP_CHARP)(char *);
+void show (V_FP_CHARP fp, char *);
+V_FP_CHARP pfun;
+V_FP_CHARP arpf[2] = {ToUpper, ToLower};
+
+while(strchr("ulton", ans) == NULL)
 
