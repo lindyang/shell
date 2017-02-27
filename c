@@ -498,5 +498,53 @@ C99
     #include <stdio.h>
     size_t fread(void * restrict ptr, size_t size, size_t nmemb, FILE * restrict stream);
 
-stddef.h 含有 size_t类型的 typedef 或# define定义.
+atexit()
+ANSI C保证 atexit 至少可以放置32个参数, 并且函数应为不接受任何参数的 void 函数.
+
+exit()
+    刷新所有输出流
+    关闭所有打开的流
+    并关闭调用标准 I/O 函数 tmpfile() 创建的临时文件
+
+void qsort(void * base, size_t nmemb, size_t size,
+    int (* compar)(const void *, const void *));
+
+stddef.h 含有 size_t类型的 typedef 或#define定义.
+
+const double * a1 = (const double *) p1;
+(const double *) 在 c++ 中必须有.
+
+
+assert.h assert 宏
+写 stderr 并 abort 函数.
+stdlib.h 中定义 abort
+#define NDEBUG
+
+strcpy, srncpy 复制字符数组.
+memcpy, memmove 函数为复制其它类型的数组提供了类似的便利工具.
+void * memcpy(void * restrict s1, const void * restrict s2, size_t n);
+void * memmove(void * s1, const void * s2, size_t n);
+
+可变参数: stdarg.h
+    1. 在函数原型中使用省略号
+    2. 在函数定义中创建一个va_list参数列表
+    3. 用宏将该变量初始化为一个参数列表.
+    4. 用宏访问这个参宿列表
+    5. 用宏完成清理工作
+
+double sum(int lim, ...){
+    double tic;
+    int toc;
+    va_list ap;  // 声明用于存放参数的变量
+    va_list apcopy;
+    va_start(ap, lim)  // 把 ap 初始化为参数列表
+    va_copy(apcopy, ap);  // apcopy 是 ap 的一个副本
+    /* 实际参数的类型必须与说明符类型向匹配
+     不会进行自动
+    tic = va_arg(ap, double);
+    toc = va_arg(ap, int);
+    va_end(ap);  // 释放动态分配的用于存放参数的内存
+    va_end(ap);
+}
+
 
