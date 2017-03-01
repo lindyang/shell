@@ -161,6 +161,9 @@ struct pnames {
     char * last;
 }
 结构体存储字符串用指针有严重误用的可能
+
+第16章节 5, 6, 7
+
 C99复合文字:
     (struct book){"title", "author", 6.99}
 C99伸缩型数组成员:
