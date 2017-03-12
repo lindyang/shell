@@ -1,0 +1,24 @@
+sed '' 单引号不许用转义$, "" 需要转义
+Error:
+    cat /etc/passwd | sed "s#/bin/bash$#/usr/local/bin/bash#g"
+
+BEGIN 读取行之前
+FS
+$NF
+END 读取行之后
+
+awk '
+BEGIN{
+    FS=":"
+}
+{
+    shells[$NF]++;
+}
+END{
+    for(i in shells)
+        print i ": " shells[i];
+}' /etc/passwd
+
+
+
+

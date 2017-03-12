@@ -547,7 +547,27 @@ double sum(int lim, ...){
     tic = va_arg(ap, double);
     toc = va_arg(ap, int);
     va_end(ap);  // 释放动态分配的用于存放参数的内存
-    va_end(ap);
 }
 
+int * sample(int arr[const restrict], int elemn, int k){
+    srand((unsigned)time(NULL));
+    int index;
+    int temp;
+    int offset;
+    if(k >= elemn){
+        k = elemn - 1;
+        offset = 1;
+    }else{
+        offset = 0;
+    }
+    elemn--;
+    while(k--){
+        index = rand() % elemn;
+        swap(arr, index, elemn);
+        elemn--;
+    }
+    return arr+(elemn - k - offset);
+}
+
+第17章 高级数据表示
 

@@ -127,21 +127,6 @@ keepalive_timeout
 lingering_timeout
 lingering_timeout
 linger_close
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+static ngx_inline ngx_int_t ngx_array_init(ngx_array_t *array, ngx_pool_t *pool, ngx_uint_t n, size_t size);
 
 
