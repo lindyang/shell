@@ -1,0 +1,132 @@
+nginx会以 daemon 方式运行. 可以手动关闭 daemon, 让 nginx 在前台运行, 通过配置可取消 master 进程, 让 nginx 单进程运行.
+
+nginx 以多进程运行, 也可支持多线程.
+
+master:
+    接收外界信号
+    向 worker 发送信号
+    监控 worker 进程运行状态
+    当 work 异常退出, 会启动新的 worker
+
+学习信号
+HUP
+
+hup->mater->reload config->new worker->stop old worker(alive till task finish).
+
+master建立好需要listen 的 socker(listenfd);
+worker 进程 fork 了 master 进程.
+
+新连接-> listend(可读)->抢 accept_mutex->accept 接收该连接->读,解析,处理->返回数据给客户端->断开连接.
+
+优点:
+    不需要锁
+    相互不影响
+
+nginx 采用异步非阻塞.
+阻塞调用会进入内核等待, cpu 会让出去给别人用.
+非阻塞, 时间没有准备好, 马上返回 EAGIN, 再借用系统调用 select/poll/epoll/kqueue.
+
+时间没好, 放到 epoll 里, 事件好了, 去读写, 当读写返回 EAGIN 时, 再次放入 epoll 里.
+
+并发的请求是指未完成的请求, 线程只有一个, 所以能同时处理的请求只有一个, 这是请求间不断进行切换, 切换也是因为异步事件没有准备好而主动让出的.
+
+nginx 提供 cpu 亲缘性绑定.
+nginx4个字节字符串比较, 转换 int 型.
+
+基本的 web 服务器:
+    网络事件
+    信号
+    定时器
+
+信号: 若 nginx 在等待事件( epoll_wait), 程序接收到信号, 信号处理函数处理完后, epoll_wait 会返回错误, 然后程序可再次进入 epoll_wait 调用.
+
+epoll_wait 可设置超时时间.
+nginx 的定时器事件放在一颗维护定时器的红黑树里面.
+
+先判断超时, 再处理网络事件.
+
+while(true){
+    for t in run_tasks:
+        t.handler();
+    update_time(&now);
+    timeout = ETERNITY;
+    for t in wait_tasks:  /* sorted already */
+        if(t.time <= now){
+            t.timeout_handler();
+        }else{
+            timeout = t.time - now;
+            break;
+        }
+    nevents = poll_function(events, timeout);
+    for i in nevents:
+        task t;
+        if(events[i].type == READ){
+            t.handler = read_handler;
+        }else{
+            t.handler = write_handler;
+        }
+        run_tasks_add(t);
+}
+
+反向代理支持 worker_connections * worker_processes/2.
+
+ngx_accept_disabled控制是否竞争 accept_mutex 锁,
+
+ngx_accept_disabled = ngx_cycle->connection_n / 8 - ngx_cycle->free_connection_n;
+if(ngx_accept_disabled > 0){
+    ngx_accept_disabled--;
+}else{
+    if(ngx_trylock_accept_mutex(cycle) == NGX_ERROR){
+        return;
+    }
+    if(ngx_accept_mutex_held){
+        flags |= NGX_POST_EVENTS;
+    }else{
+        if(timer == NGX_TIMER_INFINITE || timer > ngx_accept_mutex_delay){
+            timer = ngx_accept_mutex_delay;
+        }
+    }
+}
+
+ngx_http_init_request
+设置读事件ngx_http_process_request_line
+通过 ngx_http_read_request_header 读取请求数据,
+ngx_http_parse_requst_line 解析请求行.
+
+请求行也可以包含 host, 例如 GET http://www.taobao.com/uri HTTP/1.0
+请求行解析的参数保存到 ngx_http_request_t 中.
+
+ngx_http_process_request_headers
+还是调用 ngx_http_read_request_header 读取,
+调用 ngx_http_parse_header_line 解析, 解析的数据
+保存到 ngx_http_request_t的 headers_in(链表结构).
+ngx_http_process_request
+func: ngx_http_request_handler
+    (ngx_http_request_t 中)
+    read:
+        read_event_handler
+    write:
+        write_event_handler
+
+\r\n->ngx_http_process_request->set func:ngx_http_request_handler-
+因为不读取请求 body, 我们设置 read_event_handler 为 ngx_http_block_reading. 真正处理数据是在 ngx_http_handler, 它会设置 write_event_handler 为 ngx_http_core_run_phases(多阶段处理请求)
+产生的请求头放到 ngx_http_request_t 中的 headers_out 中.
+最后调用 filter(包括 header filter 和 body filter). ngx_http_header_filter 是 header filter 的最后一个 filter->ngx_http_write_filter 输出.
+
+client_header_buffer_size
+large_client_header_buffers 4 8k
+
+request line > buffer size return 414
+request header > buffer size return 400
+
+connection:
+    http 1.0: close
+    http 1.1 keep-alive
+keepalive_timeout
+
+lingering_timeout
+lingering_timeout
+linger_close
+static ngx_inline ngx_int_t ngx_array_init(ngx_array_t *array, ngx_pool_t *pool, ngx_uint_t n, size_t size);
+
+
