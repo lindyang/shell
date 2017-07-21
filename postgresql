@@ -1,0 +1,140 @@
+where 在分组和聚合之前
+having 在分组和聚合之后
+
+窗口函数在 where, group by, having 语句之后.
+
+"data"
+U&"d\0061t\+000061"
+
+U&"d!0061t!+000061" UESCAPE '!'
+
+为了将转义字符写到标识符中，可以将它写两次
+PostgreSQL里对未加引号的名子总是转换成小写， 这和 SQL 标准是不兼容的
+在这种类型的字符串常量里嵌入单引号的标准兼容的做法是敲入两个连续的单引号
+两个只是通过至少一个换行符的空白分隔的字符串常量会被连接在一起， 并当做它们是写成一个常量处理
+任何前导正号或负号实际上都不认为是常量的一部分； 它是施加于常量的一个操作符
+
+SQL 标识符和关键字必须以一个字母(a-z 以及带变音符的字母和非拉丁字母)或下划线(_)开头， 随后的字符可以是字母、下划线、数字(0-9)、 美元符号($)
+SQL 标准不会定义包含数字或者以下划线开头或结尾的关键字
+NAMEDATALEN-1
+要包含一个双引号，可以写两个相连的双引号
+在这种类型的字符串常量里嵌入单引号的标准兼容的做法是敲入两个连续的单引号(标准)
+两个只是通过至少一个换行符的空白分隔的字符串常量会被连接在一起， 并当做它们是写成一个常量处理
+如果用单引号语法， 每个上面例子里的每个反斜杠都必须写四个，它们在作为字符串文本分析的时候会减少为两个， 然后在函数执行的时候在内层字符串常量里会再次被解析为一个
+B'1001'
+X'1FF'
+位串常量不能用美元符引用。
+包含小数点和/或指数的常量总是被认为是 numeric类型
+type 'string' -- typename ( 'string' ), 不能用于数组类型
+'string'::type  -- 历史用法
+CAST ( 'string' AS type )  -- SQL 标准
+
+OVERLAPS
+ISNULL
+
+(arrayfunction(a,b))[42]
+(compositecol).somefield
+(mytable.compositecol).somefield
+一个聚合表达式只能在SELECT命令的结果列表或者HAVING子句里出现
+
+
+
+
+
+触发器
+可更新视图
+多版本并发控制
+
+可增加:
+    数据类型
+    函数
+    操作符
+    聚合函数
+    索引方法
+    过程语言
+./.psqlrc
+pg_dump
+
+\set VERBOSITY verbose
+log_error_verbosity
+SELECT version();
+PGHOST
+PGPORT
+PGDATA
+
+数据库服务器的程序是 postgres
+在客户机上可以访问的文件未必能够在数据库服务器上访问(或者只能用不同的文件名访问)
+
+/tmp/.s.PGSQL.5432
+服务器没有启动, 或者没有在createdb预期的地方启动
+
+20章创建账号
+PGUSER
+
+alpha.数据库名.len < 63
+dropdb 明确的数据库名
+
+pgAdmin
+select current_date;
+
+\i basics.sql
+-- comment
+ignorecase "casesentive"
+
+smallint, real, double, precision, char, date, time, timestamp, interval
+PostgreSQL允许自定义数据类型, 类型名不是语法关键词, 除了SQL标准要求支持的特例外.
+
+point
+不是简单数字的用`引起来
+date相当灵活
+'(-194.0, 53.0)' point
+
+COPY wather FROM '/home/user/weater.txt';
+
+select * from weather where city = '...';
+select * from weather inner join cities on (wather.city = cities.name);
+
+select * from weather left outer join cities on (weather.city = cities.name);
+内连接
+左连接
+右连接
+全连接
+自连接
+
+聚合函数不能用于 WHERE语句
+子查询
+聚合函数可以用于group by
+having过滤分组
+select city, max(temp_lo)
+    from weather
+    where city like 's%'
+    group by city
+    having max(temp_lo) < 40;
+
+where 在分组和聚合计算之前选取输入行
+having在分组和聚合之后
+having总是包含聚合函数(也可以使用不包含聚合的having, 但是有卵用, where更好).
+where data > '1994-11-28'
+DELETE from tablename;
+
+create view demoview as select * from tablename;
+当多个事务并发的运行时, 所有事务都不应看到其它事务所做的未完成的变化.
+GEGIN;
+UPDATE ..;
+COMMIT;
+ROLLBACK;
+
+PostgreSQL 实际上把每个SQL语句当做在一个事务中执行来看待(隐式的包含BEGIN和COMMIT).
+事务块
+savepoint;
+rollback to;
+回滚到一个保存点, 这个保存点仍然保存着其定义, 可以回滚好几次.
+释放或者回滚到一个保存点都会自动释放在其后定义的所有保存点.
+
+BEGIN
+-- money
+SAVEPOINT my_savepoint;
+++ money with wrong guy;
+ROLLBACK TO my_savepoint;
+++ money
+COMMIT;
