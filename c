@@ -233,4 +233,4 @@ V_FP_CHARP pfun;
 V_FP_CHARP arpf[2] = {ToUpper, ToLower};
 
 while(strchr("ulton", ans) == NULL)
-
+指针p 指向常量字符串(位于常量存储区),常量字符串的内容是不可以被修改的
