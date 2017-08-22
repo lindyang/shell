@@ -1,0 +1,498 @@
+functions + procedures
+incurs 招致
+
+marshaled 整理，排列，集结
+
+Argument: any scalar or array data type
+composite type (row type) specified by name
+returning record
+VARIADIC marker
+polymorphic types anyelement, anyarray, anynonarray, anyenum, and anyrange
+"set" (or table) of any data type that can be returned as a single instance, RETURN NEXT, RETURN QUERY
+return void
+output parameters
+RETURNS TABLE notation can also be used in place of RETURNS SETOF
+
+CREATE FUNCTION somefunc(integer, text) RETURNS integer
+AS 'function body text'
+LANGUAGE plpgsql;
+
+any single quotes or backslashes in the function body must be escaped by doubling them
+
+block:
+[ <<label>> ]
+[ DECLARE
+    declarations ]
+BEGIN
+    statements
+END [ label ];
+
+A block that appears within another block must have a semicolon after END
+however the final END that concludes a function body does not require a semicolon
+
+<<label>> EXIT, qualify the names
+
+All key words are case-insensitive. Identifiers are implicitly converted to lower case unless double-quoted.
+
+/* block comment
+*/
+
+subblock: logical grouping,  localize variables to a small group
+
+hidden "outer block", function's name
+declarations of the function's parameters (if any), as well as some special variables such as FOUND
+
+BEGIN/END do not start or end a transaction
+
+Functions and trigger procedures are always executed within a transaction established by an outer querythey cannot start or commit that transaction, since there would be no context for them to execute in. However, a block containing an EXCEPTION clause effectively forms a subtransaction that can be rolled back without affecting the outer transaction. For more about that see Section 41.6.6.
+
+
+
+Declarations
+
+FOR loop iterating over a range of integer,
+FOR loop iterating over a cursor's(record)
+
+myrow tablename%ROWTYPE;
+myfield tablename.columnname%TYPE;
+arow RECORD;
+
+name [ CONSTANT ] type [ COLLATE collation_name ] [ NOT NULL ] [ { DEFAULT | := | = } expression ];
+
+null value default;
+All variables declared as NOT NULL must have a nonnull default value specified.
+
+each time the block is entered (not just once per function call)
+
+name ALIAS FOR $n;
+These two examples are not perfectly equivalent. In the first case, subtotal could be referenced as sales_tax.subtotal.
+
+
+Notice that we omitted RETURNS real — we could have included it, but it would be redundant.
+
+anonymous record
+If a RETURNS clause is given, it must say RETURNS record.
+
+CREATE FUNCTION extended_sales(p_itemno int)
+RETURNS TABLE(quantity int, total numeric) AS $$
+BEGIN
+    RETURN QUERY SELECT s.quantity, s.quantity * s.price FROM sales AS s
+                 WHERE s.itemno = p_itemno;
+END;
+$$ LANGUAGE plpgsql;
+
+equivalent to declaring one or more OUT parameters and specifying RETURNS SETOF sometype.
+
+polymorphic, $0
+
+declare an alias for any variable, not just function parameters
+
+name table_name%ROWTYPE;
+name composite_type_name;
+
+Since every table has an associated composite type of the same name, it actually does not matter in PostgreSQL whether you write %ROWTYPE or not.
+
+Only the user-defined columns of a table row are accessible in a row-type variable
+
+
+name RECORD;
+Record variables are similar to row-type variables
+
+local_a text COLLATE "en_US";
+RETURN a < b COLLATE "C";
+
+
+Expressions
+
+IF expression THNE  -> SELECT expression
+prepared just once and then reused, PREPARE
+
+IF x < y THEN ..., PREPARE statement_name(integer, integer) AS SELECT $1 < $2;
+
+
+Basic Statements
+
+Assignment
+variable { := | = } expression;
+
+Executing a Command With No Result.
+INSERT without a RETURNING
+PERFORM query;
+For WITH queries, use PERFORM and then place the query in parentheses.
+
+A SQL command that can return rows, such as SELECT, will be rejected as an error unless it has an INTO clause as discussed in the next section.
+
+he result of a SQL command yielding a single row (possibly of multiple columns) can be assigned to a record variable, row-type variable, or list of scalar variables.
+
+Executing a Query with a Single-row Result
+
+SELECT select_expressions INTO [STRICT] target FROM ...;
+INSERT ... RETURNING expressions INTO [STRICT] target;
+UPDATE ... RETURNING expressions INTO [STRICT] target;
+DELETE ... RETURNING expressions INTO [STRICT] target;
+
+CREATE TABLE ... AS SELECT.
+Note that this interpretation of SELECT with INTO is quite different from PostgreSQL's regular SELECT INTO command, wherein the INTO target is a newly created table
+
+Customarily it is written either just before or just after the list of select_expressions in a SELECT command, or at the end of the command for other command types.
+
+Any result rows after the first row are discarded
+
+STRICT, now row, NO_DATA_FOUND, TOO_MANY_ROWS.
+
+
+BEGIN
+    SELECT * INTO STRICT myrec FROM emp WHERE empname = myname;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RAISE EXCEPTION 'employee % not found', myname;
+        WHEN TOO_MANY_ROWS THEN
+            RAISE EXCEPTION 'employee % not unique', myname;
+END;
+
+For INSERT/UPDATE/DELETE with RETURNING, PL/pgSQL reports an error for more than one returned row, even when STRICT is not specified.
+
+#print_strict_params on
+DECLARE
+
+plpgsql.print_strict_params
+
+
+cache plans for commands not work Executing Dynamic Commands
+
+EXECUTE command-string [ INTO [STRICT] target ] [ USING expression [, ... ] ];
+Also, there is no plan caching for commands executed via EXECUTE.
+
+If no INTO clause is specified, the query results are discarded.
+
+EXECUTE 'SELECT count(*) FROM mytable WHERE inserted_by = $1 AND inserted <= $2'
+   INTO c
+   USING checked_user, checked_date;
+
+
+Note that parameter symbols can only be used for data values — if you want to use dynamically determined table or column names, you must insert them into the command string textually.
+
+EXECUTE 'SELECT count(*) FROM '
+    || quote_ident(tabname)
+    || ' WHERE inserted_by = $1 AND inserted <= $2'
+   INTO c
+   USING checked_user, checked_date;
+
+EXECUTE format('SELECT count(*) FROM %I '
+   'WHERE inserted_by = $1 AND inserted <= $2', tabname)
+   INTO c
+   USING checked_user, checked_date;
+
+
+Another restriction on parameter symbols is that they only work in SELECT, INSERT, UPDATE, and DELETE commands. In other statement types (generically called utility statements), you must insert values textually even if they are just data values.
+
+
+SELECT INTO is not currently supported within EXECUTE; instead, execute a plain SELECT command and specify INTO as part of the EXECUTE itself.
+
+quote_ident, column or table
+quote_literal, values that should be literal strings
+quote_nullable.
+
+If you are dealing with values that might be null, you should usually use quote_nullable in place of quote_literal.
+
+'WHERE key IS NOT DISTINCT FROM ' || quote_nullable(keyvalue)
+IS NOT DISTINCT FROM is handled much less efficiently than =
+
+
+Dynamic SQL statements can also be safely constructed using the format function :
+EXECUTE format('UPDATE tbl SET %I = %L '
+   'WHERE key = %L', colname, newvalue, keyvalue);
+
+
+%L quote_nullable
+
+The format function can be used in conjunction with the USING clause:(better)
+EXECUTE format('UPDATE tbl SET %I = $1 WHERE key = $2', colname)
+   USING newvalue, keyvalue;
+
+This form is better because the variables are handled in their native data type format, rather than unconditionally converting them to text and quoting them via %L. It is also more efficient.
+
+
+Obtaining the Result Status
+
+GET [ CURRENT ] DIAGNOSTICS variable { = | := } item [ , ... ];
+
+FOUND
+
+<FETCH statement>
+<MOVE statement>
+<FOR or FOREACH statement >
+RETURN QUERY and RETURN QUERY EXECUTE
+
+EXECUTE changes the output of GET DIAGNOSTICS, but does not change FOUND.
+
+Doing Nothing At All
+NULL;
+
+
+RETURN and RETURN NEXT.
+
+RETURN (1, 2, 'three'::text);  -- must cast columns to correct types
+
+RETURN NEXT expression;
+RETURN QUERY query;
+RETURN QUERY EXECUTE command-string [ USING expression [, ... ] ];
+
+
+SETOF sometype
+
+If you declared the function with output parameters, write just RETURN NEXT with no expression.
+Note that you must declare the function as returning SETOF record when there are multiple output parameters, or SETOF sometype when there is just one output parameter of type sometype
+
+<>
+
+Note this includes the case where the condition evaluates to NULL
+
+CASE search-expression
+    WHEN expression [, expression [ ... ]] THEN
+      statements
+  [ WHEN expression [, expression [ ... ]] THEN
+      statements
+    ... ]
+  [ ELSE
+      statements ]
+END CASE;
+
+
+Simple CASE
+but if ELSE is not present, then a CASE_NOT_FOUND exception is raised.
+
+Searched CASE
+
+This form of CASE is entirely equivalent to IF-THEN-ELSIF, except for the rule that reaching an omitted ELSE clause results in an error rather than doing nothing.
+
+[ <<label>> ]
+LOOP
+    statements
+-- EXIT or RETURN statement
+END LOOP [ label ];
+
+
+EXIT [ label ] [ WHEN boolean-expression ];
+
+
+<<ablock>>
+BEGIN
+    -- some computations
+    IF stocks > 100000 THEN
+        EXIT ablock;  -- causes exit from the BEGIN block
+    END IF;
+    -- computations here will be skipped when stocks > 100000
+END;
+
+
+CONTINUE [ label ] [ WHEN boolean-expression ];
+
+[ <<label>> ]
+WHILE boolean-expression LOOP
+    statements
+END LOOP [ label ];
+
+[ <<label>> ]
+FOR name IN [ REVERSE ] expression .. expression [ BY expression ] LOOP
+    statements
+END LOOP [ label ];
+
+If REVERSE is specified then the step value is subtracted, rather than added, after each iteration
+
+Looping Through Query Results
+[ <<label>> ]
+FOR target IN query LOOP
+    statements
+END LOOP [ label ];
+
+The target is a record variable, row variable, or comma-separated list of scalar variables.
+
+If the loop is terminated by an EXIT statement, the last assigned row value is still accessible after the loop.
+
+[ <<label>> ]
+FOR target IN EXECUTE text_expression [ USING expression [, ... ] ] LOOP
+    statements
+END LOOP [ label ];
+
+[ <<label>> ]
+FOREACH target [ SLICE number ] IN ARRAY expression LOOP
+    statements
+END LOOP [ label ];
+
+
+CREATE FUNCTION sum(int[]) RETURNS int8 AS $$
+DECLARE
+  s int8 := 0;
+  x int;
+BEGIN
+  FOREACH x IN ARRAY $1
+  LOOP
+    s := s + x;
+  END LOOP;
+  RETURN s;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE FUNCTION scan_rows(int[]) RETURNS void AS $$
+DECLARE
+  x int[];
+BEGIN
+  FOREACH x SLICE 1 IN ARRAY $1
+  LOOP
+    RAISE NOTICE 'row = %', x;
+  END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT scan_rows(ARRAY[[1,2,3],[4,5,6],[7,8,9],[10,11,12]]);
+
+NOTICE:  row = {1,2,3}
+NOTICE:  row = {4,5,6}
+NOTICE:  row = {7,8,9}
+NOTICE:  row = {10,11,12}
+
+[ <<label>> ]
+[ DECLARE
+    declarations ]
+BEGIN
+    statements
+EXCEPTION
+    WHEN condition [ OR condition ... ] THEN
+        handler_statements
+    [ WHEN condition [ OR condition ... ] THEN
+          handler_statements
+      ... ]
+END;
+
+OTHERS,
+QUERY_CANCELED, ASSERT_FAILURE
+
+WHEN division_by_zero THEN ...
+WHEN SQLSTATE '22012' THEN ...
+
+INSERT with ON CONFLICT DO UPDATE
+
+
+two ways to get information about the current exception in PL/pgSQL:
+GET STACKED DIAGNOSTICS
+SQLSTATE
+SQLERRM
+
+GET STACKED DIAGNOSTICS variable { = | := } item [ , ... ];
+
+FOR loops automatically use a cursor internally to avoid memory problems.
+
+declare it as a variable of type refcursor.
+name [ [ NO ] SCROLL ] CURSOR [ ( arguments ) ] FOR query;
+
+DECLARE
+    curs1 refcursor;
+    curs2 CURSOR FOR SELECT * FROM tenk1;
+    curs3 CURSOR (key integer) FOR SELECT * FROM tenk1 WHERE unique1 = key;
+
+Opening Cursors
+
+PL/pgSQL has three forms of the OPEN statement:
+    - 2 unbound cursor
+    - 1 bound cursor(via the FOR statement implicitlye open)
+
+OPEN unbound_cursorvar [ [ NO ] SCROLL ] FOR EXECUTE query_string
+                                     [ USING expression [, ... ] ];
+
+
+OPEN bound_cursorvar [ ( [ argument_name := ] argument_value [, ...] ) ];
+
+Argument values can be passed using either positional or named notation.
+OPEN curs3(42);
+OPEN curs3(key := 42);
+
+DECLARE
+    key integer;
+        curs4 CURSOR FOR SELECT * FROM tenk1 WHERE unique1 = key;
+    BEGIN
+        key := 42;
+        OPEN curs4;
+
+FETCH [ direction { FROM | IN } ] cursor INTO target;
+MOVE [ direction { FROM | IN } ] cursor;
+UPDATE table SET ... WHERE CURRENT OF cursor;
+DELETE FROM table WHERE CURRENT OF cursor;
+CLOSE cursor;
+
+To specify a portal name, simply assign a string to the refcursor variable before opening it.
+
+FETCH ALL IN "<unnamed cursor 1>";
+
+CREATE FUNCTION myfunc(refcursor, refcursor) RETURNS SETOF refcursor AS $$
+BEGIN
+    OPEN $1 FOR SELECT * FROM table_1;
+    RETURN NEXT $1;
+    OPEN $2 FOR SELECT * FROM table_2;
+    RETURN NEXT $2;
+END;
+$$ LANGUAGE plpgsql;
+
+-- need to be in a transaction to use cursors.
+BEGIN;
+
+SELECT * FROM myfunc('a', 'b');
+
+FETCH ALL FROM a;
+FETCH ALL FROM b;
+COMMIT;
+
+
+[ <<label>> ]
+FOR recordvar IN bound_cursorvar [ ( [ argument_name := ] argument_value [, ...] ) ] LOOP
+    statements
+END LOOP [ label ];
+
+The variable recordvar is automatically defined as type record.
+
+Errors and Messages:
+
+DEBUG, LOG, INFO, NOTICE, WARNING, EXCEPTION
+log_min_messages, client_min_messages
+
+%% to emit a literal %
+
+RAISE has no parameters at all. This form can only be used inside a BEGIN block's EXCEPTION clause
+
+
+ASSERT condition [ , message ];
+
+plpgsql.check_asserts,
+
+Special local variables named PG_something are automatically defined to describe the condition that triggered the call.
+
+TG_ARGV
+
+NEW not in statement-level triggers;
+OLD not in insert operations;
+TG_NAME.
+TG_WHEN
+TG_LEVEL
+TG_OP
+TG_RELID Data type oid;
+TG_RELNAME (deprecated)
+TG_TABLE_NAME
+TG_TABLE_SCHEMA
+TG_NARGS
+TG_ARGV[] array of text
+The index counts from 0
+
+A trigger function must return either NULL or a record/row value having exactly the structure of the table the trigger was fired for.
+
+INSTEAD OF triggers (which are always row-level triggers, and may only be used on views)
+
+plpgsql.variable_conflict to one of error, use_variable, or use_column (where error is the factory default)
+
+#variable_conflict error
+#variable_conflict use_variable
+#variable_conflict use_column
+
+Notice that we had to qualify the reference to users.id in the WHERE clause to make it refer to the table column. But we did not have to qualify the reference to comment as a target in the UPDATE list, because syntactically that must be a column of users.
+
+
