@@ -1,0 +1,288 @@
+1. create the structures to hold data, how to populate the database, and how to query it
+2. data types and functions
+3. tuning a database for optimal performance
+
+novice: 'novis 初学
+
+4. SQL Syntax
+token: key word, identifier, quoted identifier, literal (or constant), special character symbol.
+
+Identifiers and Key Words:
+    Identifiers simply called "names".
+    cannot know whether a token is an identifier or a key word without knowing the language.
+    begin: letter (a-z, but also letters with diacritical marks and non-Latin letters) or an underscore (_).
+    sbusequent: letters, underscores, digits (0-9), or dollar signs ($)
+    字母(a-z 以及带变音符的字母和非拉丁字母)或下划线(_)开头
+    SQL standard:
+        -- $ not allowed in identifiers(SQL standard)
+        -- not contains digits, starts or ends with and underscore
+
+    NAMEDATALEN-1
+
+    Key words and unquoted identifiers are case insensitive.
+    convention: key words in upper case and names in lower case
+
+    provoke 英[prəˈvəʊk]
+
+    Quoted identifiers can contain any character, except the character with code zero.
+    (To include a double quote, write two double quotes.)
+
+    ampersand   英[ˈæmpəsænd]
+    {u|U}"d\0061t\+000061"  -- u & ""(space)
+
+    U&"d!0061t!+000061" USECAPE '!'  -- 非16进制, +, ', ", 空白字符
+    escape character in the identifier literally, write it twice.
+
+    !UTF8, up to \007F.
+    surrogate   英[ˈsʌrəgət]
+    sql 标准: unquoted names should be folded to upper case, 但是 postsql 没有遵循.
+    always quote a particular name or never quote it
+
+3 constants:
+    - strings
+    - bit strings
+    - numbers
+
+    'Dianne''s horse'
+
+    SELECT 'foo'  -- with at least one newline
+    'bar';
+    = SELECT 'foobar';
+    != SELECT 'foo'   'bar';
+
+    bizarre 英[bɪˈzɑ:(r) 离奇的
+
+    \o, \oo, \ooo(o = 0 - 7)
+    \xh, \xhh(h = 0 - 9, A - F)
+    \uxxxx, \uxxxxxxxx(x = 0 - 9, A - F)
+
+    {e|E}'\\foo\'hehe''xixi'
+
+    standard_conforming_strings on(9.1)
+    兼容, E'...'
+    escape_string_warning, 发现普通字符串中的\.
+    backslash_quote \'
+    The character with the code zero cannot be in a string constant.
+
+    cyrillic    英[siˈrilik] 西里尔
+
+    Dollar-quoted String Constants
+    String Constants with Unicode Escapes
+    String Constants with C-style Escapes
+    String Constants
+
+    {keyword | identifier } <space> $tag$...$tag$
+    Bit-string Constants
+        B'1001'
+        X'1FF'
+        - can be continued across lines
+        - NO Dollar quoting
+    Numeric Constants:
+        - Note that any leading plus or minus sign is not actually considered part of the constant; it is an operator applied to the constant.
+        - A numeric constant that contains neither a decimal point nor an exponent is initially presumed to be type integer if its value fits in type integer (32 bits);
+        - otherwise, bigint
+        - otherwise, numeric
+        - decimal points and/or exponents: numeric
+
+        REAL '1.23'  -- string style
+        1.23::REAL   -- PostgreSQL (historical) style
+
+    Constants of Other Types
+        - type 'string'  -- simple literal constant, not for array. 标准的, 但仅仅对少数. psql 对所有
+        - 'string'::type  -- 历史
+        - CAST ('string' AS type)  -- 标准
+        - typename ( 'string' )  -- function-like syntax, not all have correspond. 历史
+
+    Operators:
+        ~ ! @ # ` ?
+        - A multiple-character operator name cannot end in + or -, unless the name also contains at least one of these characters:
+            ~ ! @ # % ^ & | ` ?
+            @-
+    Special Characters
+        - positional parameter, identifier, dollar-quoted string constant
+        - ()
+        - [], array
+        - ,
+        - ;
+        - : slice, used to prefix variable names
+        - *, all fields, does not require any explicit parameter
+        - . schema.table.column, numeric constants
+
+    /* multiline comment
+     * with nesting: /* nested block comment */
+      */
+    replaced by whitespace
+
+    IS DISTINCT FROM
+    select 5!-4 => select 5 ! (-4);
+    schema-qualified operator
+    SELECT 3 OPERATOR(pg_catalog.+) 4;  -- "any other operator"
+    operator_precedence_warning
+
+
+Value Expressions
+    value expression is sometimes called a scalar
+    scalar expressions (or even simply expressions)
+    - 一个字段引用: correlation.columnname
+    - 一个操作符调用?
+    - 一个函数调用
+    - A row constructor: ROW
+    - A scalar subquery
+    - A window function call
+
+    expression to be subscripted is just a column reference or positional parameter, not need parenthesized
+    - (arrayfunction(a,b))[42]
+
+    expression.fieldname
+    selected from is just a table reference or positional parameter, not need parenthesized.
+    - (rowfunction(a,b)).col3
+
+    extracting a field from a table column that is of a composite type:
+    - compositecol).somefield
+    - (mytable.compositecol).somefield
+    - (compositecol).*
+
+    field-selection,
+    functional style
+    - col(table) and table.col(composite type)
+
+
+    aggregate_name (expression [ , ... ] [ order_by_clause ] ) [ FILTER ( WHERE filter_clause ) ]
+    aggregate_name (ALL expression [ , ... ] [ order_by_clause ] ) [ FILTER ( WHERE filter_clause ) ]
+    aggregate_name (DISTINCT expression [ , ... ] [ order_by_clause ] ) [ FILTER ( WHERE filter_clause ) ]
+    aggregate_name ( * ) [ FILTER ( WHERE filter_clause ) ]
+    aggregate_name ( [ expression [ , ... ] ] ) WITHIN GROUP ( order_by_clause ) [ FILTER ( WHERE filter_clause ) ]
+
+    aggregate_name
+        - qualified with a schema name
+    expression
+        - not contain aggregate expression or window function
+    ALL is the default
+
+    Most aggregate functions ignore null inputs
+    count(*) yields the total number of input rows,
+    count(f1) yields the number of input rows in which f1 is non-null
+    count(distinct f1) yields the number of distinct non-null values of f1
+
+    array_agg, string_agg depond on order
+
+    order_by_clause:
+        just expressions and cannot be output-column names or numbers
+        after all the aggregate arguments
+            SELECT string_agg(a ORDER BY a, ',') FROM table;  -- incorrect
+            ORDER BY keys
+        DISTINCT is specified in addition to order_by_clause,
+        then ORDER BY expressions must match regular arguments of the aggregate
+        cannot be output-column names or numbers
+
+    WITHIN GROUP:
+        - expressions in the order_by_clause are evaluated once per input row
+        - direct arguments(only once per aggregate call)
+        - aggregated arguments
+        - (), (*) , () is standard
+
+    SELECT
+        count(*) AS unfiltered,
+        count(*) FILTER (WHERE i < 5) AS filtered
+    FROM generate_series(1,10) AS s(i);
+
+    aggregate expression:
+        - result list
+        - HAVING clause
+    - WHERE 是在在聚合之前
+    - 注意 subquery 聚合
+
+    Window Function Calls
+
+        function_name ([expression [, expression ... ]]) [ FILTER ( WHERE filter_clause ) ] OVER window_name
+        function_name ([expression [, expression ... ]]) [ FILTER ( WHERE filter_clause ) ] OVER ( window_definition )
+        function_name ( * ) [ FILTER ( WHERE filter_clause ) ] OVER window_name
+        function_name ( * ) [ FILTER ( WHERE filter_clause ) ] OVER ( window_definition )
+
+        window_definition:
+
+        [ existing_window_name ]
+        [ PARTITION BY expression [, ...] ]
+        [ ORDER BY expression [ ASC | DESC | USING operator ] [ NULLS { FIRST | LAST } ] [, ...] ]
+        [ frame_clause ]
+
+        frame_clause:
+        { RANGE | ROWS } frame_start
+        { RANGE | ROWS } BETWEEN frame_start AND frame_end
+
+        frame_start and frame_end
+        UNBOUNDED PRECEDING
+        value PRECEDING
+        CURRENT ROW
+        value FOLLOWING
+        UNBOUNDED FOLLOWING
+
+        expression: not itself contain window function
+        OVER wname != OVER (wname)
+
+        PARTITION BY 和 ORDER BY
+            - Not output-column names or numbers
+        ONLY SELECT list and the ORDER BY clause
+
+    The COLLATE clause binds tighter than operators
+    an explicit COLLATE clause will override the collations of all other arguments
+    Also, the names interval, time, and timestamp can only be used in this fashion if they are double-quoted, because of syntactic conflicts.
+
+    COMMENT ON COLUMN bills.begincity IS '启运城市';
+    COMMENT ON TABLE bills is '运单记录';
+
+    - order by
+    - function or operator call that has locale-sensitive results
+
+    Scalar Subqueries: subquery, one row with one column
+    SELECT name, (SELECT max(pop) FROM cities WHERE cities.state = states.name)
+        FROM states;
+    - name 被当做 constant
+
+    - rectangular
+    - one base
+    SELECT ARRAY[ARRAY[1,2], ARRAY[3,4]];
+    SELECT ARRAY[[1,2],[3,4]];
+    SELECT ARRAY[f1, f2, '{{9,10},{11,12}}'::int[]] FROM arr;
+
+    SELECT ARRAY[]::integer[];  -- it's impossible to have an array with no type, must caset
+    SELECT ARRAY(SELECT oid FROM pg_proc WHERE proname LIKE 'bytea%');  -- from the results of a subquery
+        - The subquery must return a single column
+        -
+
+
+    ROW is optional when there is more than one expression in the list
+    SELECT ROW(t.*, 42) FROM t;
+    SELECT ROW(t, 42) FROM t;  -- old nested
+    CREATE TYPE AS
+    Cast to named composite type — either the row type of a table.
+    SELECT ROW(table.*) IS NULL FROM table;  -- detect all-null rows
+
+    function are not necessarily evaluated left-to-right or in any other fixed order
+    any manner allowed by the laws of Boolean algebra
+    SELECT somefunc() OR true;  -- somefunc() would (probably) not be called at all
+    algebra 英[ˈældʒɪbrə
+
+    SELECT ... WHERE CASE WHEN x > 0 THEN y/x > 1.5 ELSE false END;
+    - writing y > 1.5*x instead
+    - early evaluation of constant subexpressions
+        functions and operators marked IMMUTABLE can be evaluated when the query is planned rather than when it is executed
+        SELECT CASE WHEN x > 0 THEN x ELSE 1/0 END FROM tab;
+        is likely to result in a division-by-zero
+        IF-THEN-ELSE statement to protect a risky computation is much safer than just nesting it in a CASE expression.
+    - cannot prevent evaluation of an aggregate expression
+        -- concurrently
+        SELECT CASE WHEN min(employees) > 0
+                    THEN avg(expenses / employees)
+                END
+            FROM departments;
+
+
+4.3
+mixed notation: written first and named parameters appear after them
+Using Named Notation: SELECT concat_lower_or_upper(a => 'Hello', b => 'World');
+
+An older syntax based on ":=" is supported for backward compatibility:
+SELECT concat_lower_or_upper('Hello', 'World', uppercase => true);
+Named and mixed call notations currently cannot be used when calling an aggregate function
+(but they do work when an aggregate function is used as a window function).
