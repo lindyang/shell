@@ -1,0 +1,299 @@
+Table Basics
+    character string type: lend itself to mathematical calculations
+    Users can also define their own data types
+    timestamp: date and time
+    text for character strings
+    singular or plural nouns for table names
+    limit on how many columns a table can contain
+    DROP TABLE IF EXISTS(not standard)
+
+Default Values
+    no default value is declared explicitly, the default value is the null
+    default value can be an expression, which will be evaluated whenever the default value is inserted
+    CURRENT_TIMESTAMP
+    product_no integer DEFAULT nextval('products_product_no_seq'),
+        product_no SERIAL,
+
+    price numeric CHECK (price > 0)
+    price numeric CONSTRAINT positive_price CHECK (price > 0)
+
+    price numeric CHECK (price > 0),
+    discounted_price numeric CHECK (discounted_price > 0),  -- column constraint
+    CHECK (price > discounted_price)  -- table constraint
+
+    Column constraints can also be written as table constraints
+    CREATE TABLE products (
+        product_no integer,
+        name text,
+        price numeric,
+        CHECK (price > 0),
+        discounted_price numeric,
+        CHECK (discounted_price > 0),  -- CHECK (discounted_price > 0 AND price > discounted_price)
+        CHECK (price > discounted_price)  -- CONSTRAINT valid_discount CHECK (price > discounted_price)
+    );
+
+    most expressions will evaluate to the null value if any operand is null
+    true or the null value
+
+    A not-null constraint is always written as a column constraint
+    CHECK (column_name IS NOT NULL)
+
+    price numeric NOT NULL CHECK (price > 0)  -- The order doesn't matter
+    The NULL constraint is not present in the SQL standard
+
+    Unique Constraints
+        UNIQUE (product_no)
+        UNIQUE (a, c)
+        product_no integer CONSTRAINT must_be_different UNIQUE,
+        Adding a unique constraint will automatically create a unique B-tree index on the column or group of columns listed in the constraint.
+        wo null values are never considered equal
+        a null value in at least treat not the same(SQL standard)
+        https://www.postgresql.org/docs/9.6/static/indexes-partial.html
+        """A uniqueness restriction covering only some rows cannot be written as a unique constraint, but it is possible to enforce such a restriction by creating a unique partial index."""
+
+    Primary Keys
+        unique and not null
+        product_no integer UNIQUE NOT NULL,
+        product_no integer PRIMARY KEY,
+        PRIMARY KEY (a, c)
+        automatically create a unique B-tree index, marked NOT NULL
+        default target column(s) for foreign keys referencing its table
+
+    Foreign Keys
+        maintains the referential integrity between two related tables.
+
+        product_no integer REFERENCES products (product_no),
+        it is impossible to create orders with non-NULL product_no entries that do not appear in the products table.
+        referencing table
+        referenced table
+
+        product_no integer REFERENCES products,
+            absence of a column list the primary key of the referenced table is used as the referenced column(s)
+
+        FOREIGN KEY (b, c) REFERENCES other_table (c1, c2)  -- table constraint
+
+        - Disallow deleting a referenced product  -- RESTRICT
+        - Delete the orders as well
+            SET NULL and SET DEFAULT
+                SET DEFAULT but the default value would not satisfy the foreign key constraint, the operation will fail.
+        - Something else?  -- NO ACTION, default, error is raised
+        NO ACTION allows the check to be deferred until later in the transaction, whereas RESTRICT does not
+
+        CREATE TABLE order_items (
+            product_no integer REFERENCES products ON DELETE RESTRICT,
+            order_id integer REFERENCES orders ON DELETE CASCADE,
+            quantity integer,
+            PRIMARY KEY (product_no, order_id)
+        );
+
+        ON UPDATE
+            - CASCADE, copy
+
+        a referencing row need not satisfy the foreign key constraint if any of its referencing columns are null
+        MATCH FULL
+            escapes satisfying the constraint only if all its referencing columns are null
+
+        A foreign key must reference columns that either are a primary key or form a unique constraint
+        - whether a referencing row has a match will be efficient
+        - DELETE, UPDATE of a referenced column will require a scan of the referencing table
+            index the referencing columns too
+        declaration of a foreign key constraint does not automatically create an index on the referencing columns.
+
+    Exclusion Constraints
+        CREATE TABLE circles (
+            c circle,
+            EXCLUDE USING gist (c WITH &&)
+        );
+        automatically create an index
+
+Partial Indexes
+    - avoid indexing comman values
+    - exclude values from the index that the typical
+        query workload is not interested in.
+    - speed up update operations
+    CREATE UNIQUE INDEX tests_success_constraint ON tests (subject, target)
+        WHERE success;
+
+
+System Columns
+    oid, table was created using WITH OIDS
+    tableoid
+    xmin
+    cmin
+    xmax
+    cmax
+    ctid
+
+    modify the database contents will consume a command identifier
+
+    CREATE TABLE AS
+    WITH OIDS
+    SELECT INTO
+
+    CREATE INDEX access_log_client_ip_ix ON access_log(client_id);
+
+
+Modifying Tables
+    Add/remove columns
+    Add/remove constraint
+    Change default values
+    Change column data types
+    Rename columns
+    Rename tables
+
+    ALTER TABLE
+
+
+    The constraint will be checked immediately, so the table data must satisfy the constraint before it can be added.
+    dealing with a generated constraint name like $2  -- double quote
+
+    ALTER TABLE products ALTER COLUMN price TYPE numeric(10,2);
+
+    https://www.postgresql.org/docs/9.6/static/sql-altertable.html
+
+
+Privileges
+    privileges:
+    SELECT
+    INSERT
+    UPDATE
+    DELETE
+    TRUNCATE
+    REFERENCES
+    TRIGGER
+    CREATE
+    CONNECT
+    TEMPORARY
+    EXECUTE
+    USAGE
+    more than one manipulation in a single ALTER TABLE
+    drop the only column of a table
+
+    GRANT UPDATE ON accounts TO joe;
+    REVOKE ALL ON accounts FROM PUBLIC;
+    grant a privilege "with grant option"
+
+    right to modify or destroy an object is always the privilege of the owner only
+
+    "role" name PUBLIC
+    special privileges of the object owner cannot be granted or revoked.
+
+    grant a privilege "with grant option"
+
+
+Row Security Policies
+    a role can be considered a "user", a "group", or both depending on how it is used
+    CREATEROLE
+        alter and drop other roles
+
+    no policy exists, default-deny policy is used.
+    no rows are visible or modified.
+
+    Operation apply to whole table(TRUNCATE, REFERENCES) are not subject to security.
+
+    to commands
+    to roles
+    or both
+
+    leakproof, ahead row-security check.
+
+
+CREATE POLICY
+    Existing table rows, USING
+    new rows, WITH CHECK, false or null leads error
+    Default policy for all commands and roles
+
+    ALL, UPDATE: have both USING and WITH CHECK policies
+    :tabnext 2
+
+
+
+
+
+5.8 Schemas
+
+Users and groups of users are shared across the entire cluster
+Schemas also contain other kinds of named objects, including data types, functions, and operators.
+
+schemas are not rigidly separated
+schemas cannot be nested
+DROP SCHEMA myschema CASCADE;
+CREATE SCHEMA [schema_name] AUTHORIZATION user_name;
+Schema names beginning with pg_ are reserved
+no match in the search path, an error(even exists in other schemas)
+public It can be dropped
+SELECT 3 OPERATOR(pg_catalog.+) 4;
+OPERATOR(schema.operator)
+
+grant the USAGE privilege on the schema
+CREATE privilege on the schema needs to be granted
+everyone has CREATE and USAGE privileges on the schema public
+
+REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+(identifier, key world)
+
+pg_catalog
+    system tables
+    built-in data types
+    functions
+    operators
+    searched before searching the path's schemas
+    can place pg_catalog after user-defined
+
+
+5.9 Inheritance
+
+a table plus all of its descendant tables. The latter behavior is the default.
+SELECT name, altitude
+    FROM ONLY cities
+    WHERE altitude > 500;
+
+SELECT, UPDATE and DELETE — support the ONLY keyword.
+
+descendant tables are included:
+SELECT name, altitude
+    FROM cities*
+    WHERE altitude > 500;
+sql_inheritance
+tableoid
+
+SELECT p.relname, c.name, c.altitude
+FROM cities c, pg_class p
+WHERE c.altitude > 500 AND c.tableoid = p.oid;
+
+SELECT c.tableoid::regclass, c.name, c.altitude
+FROM cities c
+WHERE c.altitude > 500;
+
+All check constraints and not-null constraints inherited
+NO INHERIT clauses
+(unique, primary key, and foreign key constraints) are not inherited.
+merged
+
+
+ INSERT or ALTER TABLE ... RENAME
+ INCLUDING CONSTRAINTS option to LIKE
+
+
+ 5.10. Partitioning
+
+trigger or rule to redirect data
+constraint_exclusion
+COPY ignores rules
+COPY does fire triggers
+RULE: silently go into the master table instead
+Partitioning can also be arranged using a UNION ALL view
+need to recreate the view adds an extra step to adding and dropping individual partitions of the data set
+
+
+5.11 Foreign Data
+
+5.12 Other Database Objects
+    Views
+    Functions and operators
+    Data types and domains
+    Triggers and rewrite rules
+
+
+
+
