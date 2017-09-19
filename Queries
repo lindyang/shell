@@ -1,0 +1,402 @@
+7.1 Overview
+[WITH with_queries] SELECT select_list FROM table_expression [sort_specification];
+
+SELECT random();
+
+
+7.2. Table Expressions
+
+FROM table_reference [, table_reference [, ...]]
+    - table name
+    - subquery
+    - JOIN construct
+    - combinations
+
+cross-joined (笛卡尔集合)
+
+-> WHERE -> GROUP BY -> HAVING
+
+Parentheses can be used around JOIN clauses to control the join order
+T1 CROSS JOIN T2
+T1 INNER JOIN T2 ON TRUE
+T1, T2.
+
+T1 { [INNER] | { LEFT | RIGHT | FULL } [OUTER] } JOIN T2 ON boolean_expression
+T1 { [INNER] | { LEFT | RIGHT | FULL } [OUTER] } JOIN T2 USING ( join column list )
+T1 NATURAL { [INNER] | { LEFT | RIGHT | FULL } [OUTER] } JOIN T2
+
+The words INNER and OUTER are optional in all forms. INNER is the default; LEFT, RIGHT, and FULL imply an outer join.
+
+The join condition specified with ON can also contain conditions that do not relate directly to the join
+
+restriction placed in the ON clause is processed before the join, it matters a lot with outer joins
+
+not allowed to refer to the table by the original name elsewhere in the query
+FROM table_reference [AS] alias ( column1 [, column2 [, ...]] )
+FROM (VALUES ('anne', 'smith'), ('bob', 'jones'), ('joe', 'blow'))
+     AS names(first, last)
+
+
+7.2.1.4. Table Functions
+
+function_call [WITH ORDINALITY] [[AS] table_alias [(column_alias [, ...])]]
+ROWS FROM ( function_call [, ...] ) [WITH ORDINALITY] [[AS] table_alias [(column_alias [, ...])]]
+
+
+UNNEST ... WITH ORDINALITY7.1 Overview
+[WITH with_queries] SELECT select_list FROM table_expression [sort_specification];
+
+SELECT random();
+
+
+7.2. Table Expressions
+
+FROM table_reference [, table_reference [, ...]]
+    - table name
+    - subquery
+    - JOIN construct
+    - combinations
+
+cross-joined (笛卡尔集合)
+
+-> WHERE -> GROUP BY -> HAVING
+
+Parentheses can be used around JOIN clauses to control the join order
+T1 CROSS JOIN T2
+T1 INNER JOIN T2 ON TRUE
+T1, T2.
+
+T1 { [INNER] | { LEFT | RIGHT | FULL } [OUTER] } JOIN T2 ON boolean_expression
+T1 { [INNER] | { LEFT | RIGHT | FULL } [OUTER] } JOIN T2 USING ( join column list )
+T1 NATURAL { [INNER] | { LEFT | RIGHT | FULL } [OUTER] } JOIN T2
+
+The words INNER and OUTER are optional in all forms. INNER is the default; LEFT, RIGHT, and FULL imply an outer join.
+
+The join condition specified with ON can also contain conditions that do not relate directly to the join
+
+restriction placed in the ON clause is processed before the join, it matters a lot with outer joins
+
+not allowed to refer to the table by the original name elsewhere in the query
+FROM table_reference [AS] alias ( column1 [, column2 [, ...]] )
+FROM (VALUES ('anne', 'smith'), ('bob', 'jones'), ('joe', 'blow'))
+     AS names(first, last)
+
+
+7.2.1.4. Table Functions
+
+function_call [WITH ORDINALITY] [[AS] table_alias [(column_alias [, ...])]]
+ROWS FROM ( function_call [, ...] ) [WITH ORDINALITY] [[AS] table_alias [(column_alias [, ...])]]
+
+
+UNNEST ... WITH ORDINALITY7.1 Overview
+[WITH with_queries] SELECT select_list FROM table_expression [sort_specification];
+
+SELECT random();
+
+
+7.2. Table Expressions
+
+FROM table_reference [, table_reference [, ...]]
+    - table name
+    - subquery
+    - JOIN construct
+    - combinations
+
+cross-joined (笛卡尔集合)
+
+-> WHERE -> GROUP BY -> HAVING
+
+Parentheses can be used around JOIN clauses to control the join order
+T1 CROSS JOIN T2
+T1 INNER JOIN T2 ON TRUE
+T1, T2.
+
+T1 { [INNER] | { LEFT | RIGHT | FULL } [OUTER] } JOIN T2 ON boolean_expression
+T1 { [INNER] | { LEFT | RIGHT | FULL } [OUTER] } JOIN T2 USING ( join column list )
+T1 NATURAL { [INNER] | { LEFT | RIGHT | FULL } [OUTER] } JOIN T2
+
+The words INNER and OUTER are optional in all forms. INNER is the default; LEFT, RIGHT, and FULL imply an outer join.
+
+The join condition specified with ON can also contain conditions that do not relate directly to the join
+
+restriction placed in the ON clause is processed before the join, it matters a lot with outer joins
+
+not allowed to refer to the table by the original name elsewhere in the query
+FROM table_reference [AS] alias ( column1 [, column2 [, ...]] )
+FROM (VALUES ('anne', 'smith'), ('bob', 'jones'), ('joe', 'blow'))
+     AS names(first, last)
+
+
+7.2.1.4. Table Functions
+
+function_call [WITH ORDINALITY] [[AS] table_alias [(column_alias [, ...])]]
+ROWS FROM ( function_call [, ...] ) [WITH ORDINALITY] [[AS] table_alias [(column_alias [, ...])]]
+
+
+UNNEST ... WITH ORDINALITY7.1 Overview
+[WITH with_queries] SELECT select_list FROM table_expression [sort_specification];
+
+SELECT random();
+
+
+7.2. Table Expressions
+
+FROM table_reference [, table_reference [, ...]]
+    - table name
+    - subquery
+    - JOIN construct
+    - combinations
+
+cross-joined (笛卡尔集合)
+
+-> WHERE -> GROUP BY -> HAVING
+
+Parentheses can be used around JOIN clauses to control the join order
+T1 CROSS JOIN T2
+T1 INNER JOIN T2 ON TRUE
+T1, T2.
+
+T1 { [INNER] | { LEFT | RIGHT | FULL } [OUTER] } JOIN T2 ON boolean_expression
+T1 { [INNER] | { LEFT | RIGHT | FULL } [OUTER] } JOIN T2 USING ( join column list )
+T1 NATURAL { [INNER] | { LEFT | RIGHT | FULL } [OUTER] } JOIN T2
+
+The words INNER and OUTER are optional in all forms. INNER is the default; LEFT, RIGHT, and FULL imply an outer join.
+
+The join condition specified with ON can also contain conditions that do not relate directly to the join
+
+restriction placed in the ON clause is processed before the join, it matters a lot with outer joins
+
+not allowed to refer to the table by the original name elsewhere in the query
+FROM table_reference [AS] alias ( column1 [, column2 [, ...]] )
+FROM (VALUES ('anne', 'smith'), ('bob', 'jones'), ('joe', 'blow'))
+     AS names(first, last)
+
+
+7.2.1.4. Table Functions
+
+function_call [WITH ORDINALITY] [[AS] table_alias [(column_alias [, ...])]]
+ROWS FROM ( function_call [, ...] ) [WITH ORDINALITY] [[AS] table_alias [(column_alias [, ...])]]
+
+
+UNNEST ... WITH ORDINALITY7.1 Overview
+[WITH with_queries] SELECT select_list FROM table_expression [sort_specification];
+
+SELECT random();
+
+
+7.2. Table Expressions
+
+FROM table_reference [, table_reference [, ...]]
+    - table name
+    - subquery
+    - JOIN construct
+    - combinations
+
+cross-joined (笛卡尔集合)
+
+-> WHERE -> GROUP BY -> HAVING
+
+Parentheses can be used around JOIN clauses to control the join order
+T1 CROSS JOIN T2
+T1 INNER JOIN T2 ON TRUE
+T1, T2.
+
+T1 { [INNER] | { LEFT | RIGHT | FULL } [OUTER] } JOIN T2 ON boolean_expression
+T1 { [INNER] | { LEFT | RIGHT | FULL } [OUTER] } JOIN T2 USING ( join column list )
+T1 NATURAL { [INNER] | { LEFT | RIGHT | FULL } [OUTER] } JOIN T2
+
+The words INNER and OUTER are optional in all forms. INNER is the default; LEFT, RIGHT, and FULL imply an outer join.
+
+The join condition specified with ON can also contain conditions that do not relate directly to the join
+
+restriction placed in the ON clause is processed before the join, it matters a lot with outer joins
+
+not allowed to refer to the table by the original name elsewhere in the query
+FROM table_reference [AS] alias ( column1 [, column2 [, ...]] )
+FROM (VALUES ('anne', 'smith'), ('bob', 'jones'), ('joe', 'blow'))
+     AS names(first, last)
+
+
+7.2.1.4. Table Functions
+
+function_call [WITH ORDINALITY] [[AS] table_alias [(column_alias [, ...])]]
+ROWS FROM ( function_call [, ...] ) [WITH ORDINALITY] [[AS] table_alias [(column_alias [, ...])]]
+
+
+UNNEST ... WITH ORDINALITY7.1 Overview
+[WITH with_queries] SELECT select_list FROM table_expression [sort_specification];
+
+SELECT random();
+
+
+7.2. Table Expressions
+
+FROM table_reference [, table_reference [, ...]]
+    - table name
+    - subquery
+    - JOIN construct
+    - combinations
+
+cross-joined (笛卡尔集合)
+
+-> WHERE -> GROUP BY -> HAVING
+
+Parentheses can be used around JOIN clauses to control the join order
+T1 CROSS JOIN T2
+T1 INNER JOIN T2 ON TRUE
+T1, T2.
+
+T1 { [INNER] | { LEFT | RIGHT | FULL } [OUTER] } JOIN T2 ON boolean_expression
+T1 { [INNER] | { LEFT | RIGHT | FULL } [OUTER] } JOIN T2 USING ( join column list )
+T1 NATURAL { [INNER] | { LEFT | RIGHT | FULL } [OUTER] } JOIN T2
+
+The words INNER and OUTER are optional in all forms. INNER is the default; LEFT, RIGHT, and FULL imply an outer join.
+
+The join condition specified with ON can also contain conditions that do not relate directly to the join
+
+restriction placed in the ON clause is processed before the join, it matters a lot with outer joins
+
+not allowed to refer to the table by the original name elsewhere in the query
+FROM table_reference [AS] alias ( column1 [, column2 [, ...]] )
+FROM (VALUES ('anne', 'smith'), ('bob', 'jones'), ('joe', 'blow'))
+     AS names(first, last)
+
+
+7.2.1.4. Table Functions
+
+function_call [WITH ORDINALITY] [[AS] table_alias [(column_alias [, ...])]]
+ROWS FROM ( function_call [, ...] ) [WITH ORDINALITY] [[AS] table_alias [(column_alias [, ...])]]
+
+
+UNNEST ... WITH ORDINALITY7.1 Overview
+[WITH with_queries] SELECT select_list FROM table_expression [sort_specification];
+
+SELECT random();
+
+
+7.2. Table Expressions
+
+FROM table_reference [, table_reference [, ...]]
+    - table name
+    - subquery
+    - JOIN construct
+    - combinations
+
+cross-joined (笛卡尔集合)
+
+-> WHERE -> GROUP BY -> HAVING
+
+Parentheses can be used around JOIN clauses to control the join order
+T1 CROSS JOIN T2
+T1 INNER JOIN T2 ON TRUE
+T1, T2.
+
+T1 { [INNER] | { LEFT | RIGHT | FULL } [OUTER] } JOIN T2 ON boolean_expression
+T1 { [INNER] | { LEFT | RIGHT | FULL } [OUTER] } JOIN T2 USING ( join column list )
+T1 NATURAL { [INNER] | { LEFT | RIGHT | FULL } [OUTER] } JOIN T2
+
+The words INNER and OUTER are optional in all forms. INNER is the default; LEFT, RIGHT, and FULL imply an outer join.
+
+The join condition specified with ON can also contain conditions that do not relate directly to the join
+
+restriction placed in the ON clause is processed before the join, it matters a lot with outer joins
+
+not allowed to refer to the table by the original name elsewhere in the query
+FROM table_reference [AS] alias ( column1 [, column2 [, ...]] )
+FROM (VALUES ('anne', 'smith'), ('bob', 'jones'), ('joe', 'blow'))
+     AS names(first, last)
+
+
+7.2.1.4. Table Functions
+
+function_call [WITH ORDINALITY] [[AS] table_alias [(column_alias [, ...])]]
+ROWS FROM ( function_call [, ...] ) [WITH ORDINALITY] [[AS] table_alias [(column_alias [, ...])]]
+
+
+UNNEST ... WITH ORDINALITY
+
+UNNEST( array_expression [, ... ] ) [WITH ORDINALITY] [[AS] table_alias [(column_alias [, ... ])]]
+
+select * from unnest(ARRAY[1,2],ARRAY['foo','bar','baz']) WITH ORDINALITY AS t(a, b, id);
+
+SELECT ... FROM fdt WHERE c1 IN (SELECT c3 FROM t2 WHERE c2 = fdt.c1 + 10)
+
+SELECT ... FROM fdt WHERE EXISTS (SELECT c1 FROM t2 WHERE c2 > fdt.c1)
+
+Qualifying c1 as fdt.c1 is only necessary if c1 is also the name of a column in the derived input table of the subquery
+columns that are not listed in GROUP BY cannot be referenced except in aggregate expressions
+
+the result is a single group row
+
+
+7.3. Select Lists
+SELECT tbl1.*, tbl2.a FROM ...
+
+To avoid an accidental match to a keyword, you can double-quote the column name.
+SELECT a "value", b + c AS sum FROM ...
+For protection against possible future keyword additions, it is recommended that you always either write AS or double-quote the output column name.
+
+DISTINCT the key word ALL
+SELECT DISTINCT ON (expression [, expression ...]) select_list ...
+DISTINCT ON processing occurs after ORDER BY sorting.
+
+
+7.4. Combining Queries
+
+query1 UNION [ALL] query2
+query1 INTERSECT [ALL] query2
+query1 EXCEPT [ALL] query2
+
+
+7.5. Sorting Rows
+SELECT select_list
+    FROM table_expression
+    ORDER BY sort_expression1 [ASC | DESC] [NULLS { FIRST | LAST }]
+             [, sort_expression2 [ASC | DESC] [NULLS { FIRST | LAST }] ...]
+
+SELECT a, b FROM table1 ORDER BY a + b, c;
+
+ASC order is the default
+
+NULLS FIRST is the default for DESC order, and NULLS LAST otherwise.
+A sort_expression can also be the column label or number of an output column
+an output column name has to stand alone, that is, it cannot be used in an expression
+
+RDER BY can be applied to the result of a UNION, INTERSECT, or EXCEPT combination, but in this case it is only permitted to sort by output column names or numbers, not by expressions.
+
+
+
+7.6. LIMIT and OFFSET
+
+LIMIT ALL
+LIMIT NULL
+OFFSET 0
+OFFSET NULL
+
+When using LIMIT, it is important to use an ORDER BY clause that constrains the result rows into a unique order. Otherwise you will get an unpredictable subset of the query's rows.
+
+
+The rows skipped by an OFFSET clause still have to be computed inside the server; therefore a large OFFSET might be inefficient
+
+
+
+7.7. VALUES Lists
+
+SELECT 1 AS column1, 'one' AS column2
+UNION ALL
+SELECT 2, 'two'
+UNION ALL
+SELECT 3, 'three';
+
+
+7.8. WITH Queries (Common Table Expressions)
+
+WITH ... AS (
+        ...
+    ), ... AS (
+        ...
+    )
+SELECT ...
+
+
+RECURSIVE

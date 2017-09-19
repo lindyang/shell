@@ -1,0 +1,53 @@
+8.1. Numeric Types
+
+decimal numeric: variable
+real 4 bytes
+double 8 bytes
+
+[small | big ] serial
+
+selects a scale of 0. Specifying: NUMERIC
+
+AUTO_INCREMENT
+CREATE SEQUENCE tablename_colname_seq;
+CREATE TABLE tablename (
+colname integer NOT NULL DEFAULT nextval('tablename_colname_seq')
+);
+ALTER SEQUENCE tablename_colname_seq OWNED BY tablename.colname;
+
+integer (or int)
+int2, int4, int8
+scale, precision
+NUMERIC(precision, scale)
+UMERIC(precision)
+Numeric values are physically stored without any extra leading or trailing zeroes
+the string NaN is recognized in a case-insensitive manner.
+round(x::double precision)
+[-]Infinity
+NaN
+case-insensitive manner
+PostgreSQL treats NaN values as equal, and greater than all non-NaN values
+float(1) to float(24) as selecting the real type
+float(25) to float(53) select double
+This can be done either by excluding the column from the list of columns in the INSERT statement, or through the use of the DEFAULT key word
+
+
+8.2. Monetary Types
+SELECT '12.34'::float8::numeric::money;
+real, double percision can be casting to numeric first.
+A money value can be cast to numeric without loss of precision
+SELECT '52093.89'::money::numeric::float8;
+
+8.3. Character Types
+
+An attempt to store a longer string into a column of these types will result in an error, unless the excess characters are all spaces, in which case the string will be truncated to the maximum length
+
+character varying(n): varchar(n)
+character(n): char(n)
+"char"
+up to n characters(not bytes) in length
+character character(1)
+Values of type character are physically padded with spaces to the specified width n, and are stored and displayed that way
+SELECT 'a '::CHAR(2) collate "C" < E'a\n'::CHAR(2)
+
+
