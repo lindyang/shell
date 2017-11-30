@@ -1,0 +1,45 @@
+--system
+--global ~/.gitconfig
+[--local]
+
+git config --global core.editor vim
+git config --list
+git config <key> 检查git配置
+git config --unset <key>
+
+3 种方式 git 使用手册
+
+git rm --cached <file>
+git reset HEAD <file>
+
+git add: 参数是目录的路径，该命令将递归地跟踪该目录下的所有文件.
+git status -s
+
+.gitignore
+/）开头防止递归
+/）结尾指定目录
+惊叹号（!）取反
+
+glob:
+    *
+    [abc]
+    ?
+    **
+
+/TODO
+# current directory, not subdir/TODO
+
+/build
+# ignore all files in the build/
+
+怎么样改变第一个文件之后与第二个文件匹配
+--normal
+--context
+--unified
+
+退出编辑器时，Git 会丢掉注释行，用你输入提交附带信息生成一次提交
+
+
+git push -u
+
+
